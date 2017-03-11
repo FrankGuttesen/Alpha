@@ -70,6 +70,33 @@ int SpriteManager::getSpriteWidth(std::string id) {
 	return -1;
 }
 
+void SpriteManager::createAnimation(std::string id,  std::vector<std::string>SpriteIds) {
+	std::vector<Texture>animation;
+	for (int i = 0; i < SpriteIds.size(); i++) {
+		animation.push_back(getSprite(SpriteIds[i]));
+	}
+	Animation anim(id, animation);
+	animations.push_back(anim);
+
+}
+
+void SpriteManager::renderAnimation(std::string ID, int x, int y) {
+	for (int i = 0; i < animations.size(); i++) {
+		if (animations[i].getID() == ID) {
+			animations[i].playAnimation(Renderer, x, y);
+		}
+	}
+	
+}
+
+Texture SpriteManager::getSprite(std::string id) {
+	for (int i = 0; i < sprites.size(); i++) {
+		if (sprites[i]->getID() == id) {
+			return *sprites[i];
+		}
+	}
+}
+
 void SpriteManager::SetRenderDrawColor(int r, int g, int b, int a) {
 	SDL_SetRenderDrawColor(Renderer, r, g, b, a);
 }

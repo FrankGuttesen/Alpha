@@ -114,4 +114,6 @@ std::string Texture::getID() {
 	return id;
 }
 
-
+SDL_Texture* Texture::getTexture() {
+	return mTexture;
+}

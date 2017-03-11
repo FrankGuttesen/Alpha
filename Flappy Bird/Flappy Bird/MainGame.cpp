@@ -26,7 +26,7 @@ MainGame::~MainGame() {
 	window.~Window();
 	audioManager.~AudioManager();
 	spriteManager.~SpriteManager();
-
+	
 	//Destroy window	
 	window.~Window();
 }
@@ -87,14 +87,23 @@ bool MainGame::loadAudio() {
 
 // load Sprites
 void MainGame::loadSprites() {
+	spriteManager.newSprite("player", "Sprites/sheet.png", 34, 24, 311, 230);
+	spriteManager.newSprite("player2", "Sprites/sheet.png", 34, 24, 311, 256);
+	spriteManager.newSprite("player3", "Sprites/sheet.png", 34, 24, 311, 282);
+
+	// create a new animation of the bird flapping
+	std::vector<std::string>ids;
+	ids.push_back("player");
+	ids.push_back("player2");
+	ids.push_back("player3");
+	spriteManager.createAnimation("player", ids);
+
 	spriteManager.newSprite("background", "Sprites/sheet.png", 275, 111, 0, 0);
 	spriteManager.newSprite("ground", "Sprites/sheet.png", 225, 110, 275, 0);
 	spriteManager.newSprite("pipeTop", "Sprites/sheet.png", 54, 400, 552, 0);
 	spriteManager.newSprite("pipeBottom", "Sprites/sheet.png", 52, 400, 502, 0);
 	spriteManager.newSprite("pipeTop2", "Sprites/sheet.png", 54, 400, 552, 0);
 	spriteManager.newSprite("pipeBottom2", "Sprites/sheet.png", 52, 400, 502, 0);
-
-	spriteManager.newSprite("player", "Sprites/sheet.png", 34, 24, 311, 230);
 
 	spriteManager.newSprite("flappyBird", "Sprites/sheet.png", 192, 44, 118, 228);
 	spriteManager.newSprite("getReady", "Sprites/sheet.png", 174, 44, 118, 310);
@@ -106,6 +115,8 @@ void MainGame::loadSprites() {
 	spriteManager.newSprite("coinSilver", "Sprites/sheet.png", 44, 45, 397, 228);
 	spriteManager.newSprite("coinBronze", "Sprites/sheet.png", 44, 45, 397, 274);
 	spriteManager.newSprite("coinGold", "Sprites/sheet.png", 44, 45, 348, 274);
+
+
 
 }
 
@@ -366,6 +377,7 @@ void MainGame::checkCollision() {
 
 // renders items to the window
 void MainGame::render() {
+	static bool hasRenderedScore = false;
 	int height, width, counter;
 	//Clear screen
 	spriteManager.SetRenderDrawColor(111, 170, 230, 255);
@@ -392,12 +404,19 @@ void MainGame::render() {
 
 
 	if (state == PLAYING) {
+		hasRenderedScore = false;
+
 		if (renderables.size() != 0) {
 			int priority = BACKGROUND;
 			while (priority >= 0) {
 				for (int i = 0; i < renderables.size(); i++) {
 					if (renderables[i].getPriority() == priority) {
-						spriteManager.render(renderables[i].getPosX(), renderables[i].getPosY(), renderables[i].getID());
+						if (renderables[i].getID() == "player") {
+							spriteManager.renderAnimation("player", renderables[i].getPosX(), renderables[i].getPosY());
+						}
+						else {
+							spriteManager.render(renderables[i].getPosX(), renderables[i].getPosY(), renderables[i].getID());
+						}
 					}
 				}
 				priority--;
@@ -441,6 +460,10 @@ void MainGame::render() {
 		}
 		if (score > 14 && score < 20) {
 			spriteManager.render(width, height, "coinGold");
+		}
+		if (!hasRenderedScore) { 
+			std::cout << "Score: " << score << std::endl; 
+			hasRenderedScore = true;
 		}
 	}
 
