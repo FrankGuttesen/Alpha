@@ -1,0 +1,29 @@
+Møguleikan at rendra tekst{
+  Hetta kann m.a. gerast við Font Rendering
+  Dømi:  http://lazyfoo.net/tutorials/SDL/41_bitmap_fonts/index.php
+  Annar møguleiki er True Type Fonts:
+  Dømi:  http://lazyfoo.net/tutorials/SDL/16_true_type_fonts/index.php
+}
+
+Ein animatións klassa
+Animation(){
+  int counter;
+  vector<Texture*>Animation
+  
+  void playAnimation(SDL_Renderer){
+    if(counter < Animation.size()){
+      animation[i].render(SDL_Renderer);
+      counter++;
+    }
+    if(counter == Animation.size()){
+      counter = 0;
+      animation[i].render(SDL_Renderer);
+      counter++;
+    }
+  }
+  
+  void createAnimation(){
+    kopiera bara frá spriteManager.newSprite();
+  }
+  
+}
