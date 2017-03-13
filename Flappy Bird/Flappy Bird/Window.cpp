@@ -12,6 +12,11 @@ Window::Window()
 
 // destructor
 Window::~Window(){
+	close();
+}
+
+// destroys window and closes sdl
+void Window::close() {
 	SDL_DestroyWindow(_sdlWindow);
 	SDL_Quit();
 }
@@ -53,14 +58,17 @@ int Window::create(std::string windowName, int screenWidth, int screenHeight, un
 }
 
 
+// returns window width
 int Window::getScreenWidth() { 
 	return _screenWidth; 
 }
 
+// returns window height
 int Window::getScreenHeight() {
 	return _screenHeight; 
 }
 
+// returns the window as an SDL_Window*
 SDL_Window* Window::getWindow() { 
 	return _sdlWindow;
 }

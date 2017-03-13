@@ -1,14 +1,16 @@
 #include "Texture.h"
 #include <iostream>
 
-// constructor
+// empty constructor
 Texture::Texture() {
 	//Initialize
 	mTexture = NULL;
 	mWidth = 0;
 	mHeight = 0;
+	id = "";
 }
 
+// constructor
 Texture::Texture(SDL_Renderer* gRenderer, std::string ID, std::string path, int width, int height, int x, int y) {
 	mTexture = NULL;
 	mWidth = 0;
@@ -22,7 +24,6 @@ Texture::~Texture() {
 	// Deallocate
 	free();
 }
-
 
 // deallocates texture variable
 void Texture::free() {
@@ -75,9 +76,35 @@ bool Texture::loadFromFile(SDL_Renderer* gRenderer, std::string path, int width,
 	return mTexture != NULL;
 }
 
+// load a text with a given font as a texture
+bool Texture::loadFromRenderedText(SDL_Renderer* gRenderer, TTF_Font *gFont, std::string textureText, int textColor[3]) {
+	//Get rid of preexisting texture 
+	free(); 
+	
+	SDL_Color color = { textColor[0], textColor[1], textColor[2]};
+	//Render text surface 
+	SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), color); 
+	if( textSurface == NULL ) { 
+		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() ); 
+	} else { 
+		//Create texture from surface pixels 
+		mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface ); 
+		if( mTexture == NULL ) { 
+			printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() ); 
+		} else {
+			//Get image dimensions 
+			mWidth = textSurface->w; 
+			mHeight = textSurface->h; 
+		} 
+		//Get rid of old surface 
+		SDL_FreeSurface( textSurface ); 
+	} 
+	//Return success 
+	return mTexture != NULL;
+}
 
 // renders the texture to the screen
-void Texture::render(SDL_Renderer* gRenderer, int x, int y) {
+void Texture::render(SDL_Renderer* gRenderer, int x, int y, double angle, SDL_Point* center, SDL_RendererFlip flip) {
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 	
@@ -89,13 +116,14 @@ void Texture::render(SDL_Renderer* gRenderer, int x, int y) {
 	}
 
 	if (rect.w == 0 && rect.h == 0) {
-		SDL_RenderCopy(gRenderer, mTexture, NULL, &renderQuad);
+		SDL_RenderCopyEx(gRenderer, mTexture, NULL, &renderQuad, angle, center, flip);
 	}
 	else {
-		SDL_RenderCopy(gRenderer, mTexture, &rect, &renderQuad);
+		SDL_RenderCopyEx(gRenderer, mTexture, &rect, &renderQuad, angle, center, flip);
 	}
 }
 
+// set the id of the texutre
 void Texture::setID(std::string ID) {
 	id = ID;
 }
@@ -110,10 +138,12 @@ int Texture::getHeight() {
 	return mHeight;
 }
 
+// returns the textures' id
 std::string Texture::getID() {
 	return id;
 }
 
+// returns the texture as a SDL_Texture* object
 SDL_Texture* Texture::getTexture() {
 	return mTexture;
 }

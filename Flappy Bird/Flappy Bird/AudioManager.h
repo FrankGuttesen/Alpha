@@ -25,19 +25,19 @@ public:
 	void playSound(std::string id);
 	void playSong(std::string id);
 
+	// volume functions
 	void setSoundFXVolume(int channel, int volume);
 	void setMusicVolume(int volume);
 	void increaseSoundFXVolume();
 	void increaseMusicVolume();
 	void lowerSoundFXVolume();
 	void lowerMusicVolume();
-
 	int getSoundFXVolume();
 	int getMusicVolume();
 
 private:
 	// audio vectors
-	std::vector<Song>songList;
-	std::vector<SoundEffect>soundFX;
+	std::vector<Song*>songList;
+	std::vector<SoundEffect*>soundFX;
 };
 

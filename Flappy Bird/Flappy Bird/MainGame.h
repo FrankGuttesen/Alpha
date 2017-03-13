@@ -2,6 +2,7 @@
 #include <time.h>
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "Window.h"
 #include "SpriteManager.h"
@@ -11,7 +12,7 @@
 #include "GameObject.h"
 #include "Texture.h"
 
-
+// the various states the game can be in
 enum GameStates
 {
 	MENU,
@@ -22,15 +23,20 @@ enum GameStates
 class MainGame
 {
 public:
+	// constructor4
 	MainGame();
+
+	// destructor
 	~MainGame();
 
+	// initialise systems and load object/resources
 	void init();
-
 	bool loadAudio();
 	void loadSprites();
 	void loadGameObjects();
+	void loadFonts();
 
+	// game functionality
 	void run();
 	void processInput();
 	void update();
@@ -41,35 +47,36 @@ public:
 
 
 private:
+	// game variables
 	bool passedPipe;
 	bool passedPipe2;
 	bool godMode;
+	bool running;
+	GameStates state;
+
 	int score;
+	int highScore;
+
 	float gameSpeed;
 	float gravity;
 	float acceleration;
 	float maxAcceleration;
 
-	// game variables
-	bool running;
-	GameStates state;
-
-	// Engine functionality
-	Window window;	// gera ein enum wrappara til Window FLAGS
-	SpriteManager spriteManager;
-	InputManager inputManager;
-	AudioManager audioManager;
-	FpsLimiter limiter;
-	
-	// Gameobjects høvdu eventuelt kunna veri í world/lvl klassa
+	// Gameobjects kunnu eventuelt vera í world/lvl klassa ella einum object manager
 	GameObject player;
 	GameObject pipeTop;
 	GameObject pipeBottom;
 	GameObject pipeTop2;
 	GameObject pipeBottom2;
 
+	// Engine functionality
+	InputManager inputManager;
+	FpsLimiter limiter;
+	Window window;
+	SpriteManager spriteManager;
+	AudioManager audioManager;
+
 	// vector of objects that are to be rendered each iteration
 	std::vector<GameObject>renderables;
-
 };
 
