@@ -1,8 +1,9 @@
 #include "SpriteManager.h"
-#include <iostream>
+#include "Errors.h"
 
 // constructors
-SpriteManager::SpriteManager() {
+SpriteManager::SpriteManager()
+{
 }
 
 SpriteManager::SpriteManager(Window* window)
@@ -10,17 +11,17 @@ SpriteManager::SpriteManager(Window* window)
 	// Create renderer for window
 	Renderer = SDL_CreateRenderer(window->getWindow(), -1, SDL_RENDERER_ACCELERATED);
 	if (Renderer == NULL) {
-		printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+		Error("Renderer could not be created! SDL Error: " + *SDL_GetError());
 	}
 	else {
 		//Initialize PNG loading
 		int imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags)){
-			printf("SDL_image could not initialize! SDL_mage Error: %s\n", IMG_GetError());
+			Error("SDL_image could not initialize! SDL_mage Error: " + *IMG_GetError());
 		}
 		//Initialize SDL_ttf
 		if (TTF_Init() == -1) {
-			printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+			Error("SDL_ttf could not initialize! SDL_ttf Error: " + *TTF_GetError());
 		}
 	}
 }
@@ -38,6 +39,9 @@ void SpriteManager::close() {
 	for (int i = 0; i < sprites.size(); i++) {
 		delete sprites[i];
 	}
+	for (int i = 0; i < fonts.size(); i++) {
+		delete fonts[i];
+	}
 
 	//Quit SDL subsystems
 	IMG_Quit();
@@ -53,36 +57,65 @@ void SpriteManager::newSprite(std::string ID, std::string path, int width, int h
 }
 
 // creates a new font texture
-void SpriteManager::newFont(std::string ID, const char* fontPath, int size, std::string textureText, int textColor[3]) {
+void SpriteManager::newFont(std::string ID, const char* fontPath, int size) {
 	//Open the font
-	gFont = TTF_OpenFont(fontPath, size);
+	TTF_Font* gFont = TTF_OpenFont(fontPath, size);
 	if (gFont == NULL) {
-		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+		Error("Failed to load font! SDL_ttf Error: " + *TTF_GetError());
 	}
 	else {
-		Texture *newFont = new Texture();
-		newFont->setID(ID);
+		fonts.push_back(new Font(ID, gFont));
+	}
+}
+
+// creates a new font texture
+void SpriteManager::newFontTexture(std::string ID, std::string fontID, int size, std::string textureText, int textColor[3]) {
+	Texture *newFont = new Texture();
+	newFont->setID(ID);
+	TTF_Font* gFont = NULL;
+
+	for (int i = 0; i < fonts.size(); i++) {
+		if (fonts[i]->getID() == fontID) {
+			gFont = fonts[i]->getFont();
+		}
+	}
+
+	if (!gFont == NULL) {
 		if (!newFont->loadFromRenderedText(Renderer, gFont, textureText, textColor))
 		{
-			printf("Failed to render text texture!\n");
+			Error("Failed to render text texture!");
 		}
 		sprites.push_back(newFont);
+	}
+	else {
+		Error("Did not find font");
 	}
 }
 
 // updates the text in a specific font texture
-void SpriteManager::updateFont(std::string ID, std::string textureText, int textColor[3]) {
-	for (int i = 0; i < sprites.size(); i++) {
-		if (sprites[i]->getID() == ID) {
-			sprites[i]->free();
-			Texture *newFont = new Texture();
-			newFont->setID(ID);
-			if (!newFont->loadFromRenderedText(Renderer, gFont, textureText, textColor))
-			{
-				printf("Failed to update text texture!\n");
-			}
-			sprites[i] = newFont;
+void SpriteManager::updateFontTexture(std::string ID, std::string fontID, std::string textureText, int textColor[3]) {
+	TTF_Font* gFont = NULL;
+	for (int i = 0; i < fonts.size(); i++) {
+		if (fonts[i]->getID() == fontID) {
+			gFont = fonts[i]->getFont();
 		}
+	}
+	if (!gFont == NULL) {
+		for (int i = 0; i < sprites.size(); i++) {
+			if (sprites[i]->getID() == ID) {
+				sprites[i]->free();
+				Texture *newFont = new Texture();
+				newFont->setID(ID);
+				if (!newFont->loadFromRenderedText(Renderer, gFont, textureText, textColor))
+				{
+					Error("Failed to update text texture!");
+				}
+				sprites[i] = newFont;
+			}
+		}
+	}
+	else {
+		Error("Did not find font");
 	}
 }
 
@@ -133,7 +166,6 @@ void SpriteManager::renderAnimation(std::string ID, int x, int y, double angle) 
 			animations[i].playAnimation(Renderer, x, y, angle);
 		}
 	}
-	
 }
 
 // returns a sprite as a texture object

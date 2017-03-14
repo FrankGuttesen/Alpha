@@ -126,6 +126,7 @@
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Errors.h" />
+    <ClInclude Include="Font.h" />
     <ClInclude Include="FpsLimiter.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="InputManager.h" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Errors.cpp" />
+    <ClCompile Include="Font.cpp" />
     <ClCompile Include="FpsLimiter.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="InputManager.cpp" />

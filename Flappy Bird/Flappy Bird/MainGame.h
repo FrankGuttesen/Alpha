@@ -23,7 +23,7 @@ enum GameStates
 class MainGame
 {
 public:
-	// constructor4
+	// constructor
 	MainGame();
 
 	// destructor
@@ -31,7 +31,7 @@ public:
 
 	// initialise systems and load object/resources
 	void init();
-	bool loadAudio();
+	void loadAudio();
 	void loadSprites();
 	void loadGameObjects();
 	void loadFonts();
@@ -52,6 +52,7 @@ private:
 	bool passedPipe2;
 	bool godMode;
 	bool running;
+	bool renderFPS;
 	GameStates state;
 
 	int score;

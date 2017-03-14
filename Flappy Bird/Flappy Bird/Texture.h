@@ -39,6 +39,7 @@ private:
 	SDL_Texture* mTexture;
 	SDL_Rect rect;
 	std::string id;
+	TTF_Font* font;
 
 	//Image dimensions
 	int mWidth;

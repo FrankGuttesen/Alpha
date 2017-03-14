@@ -80,3 +80,8 @@ void FpsLimiter::calculateFPS() {
 		_fps = 60.0f;
 	}
 }
+
+// return the current fps
+double FpsLimiter::getFPS() {
+	return _fps;
+}

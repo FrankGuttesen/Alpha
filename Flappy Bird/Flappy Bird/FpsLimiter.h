@@ -16,6 +16,9 @@ public:
 	// end() will return the current FPS as a float
 	float end();
 
+	// returns the current fps
+	double getFPS();
+
 private:
 	// Calculates the current FPS
 	void calculateFPS();

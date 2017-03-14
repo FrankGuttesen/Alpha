@@ -1,5 +1,5 @@
 #include "Texture.h"
-#include <iostream>
+#include "Errors.h"
 
 // empty constructor
 Texture::Texture() {
@@ -80,17 +80,17 @@ bool Texture::loadFromFile(SDL_Renderer* gRenderer, std::string path, int width,
 bool Texture::loadFromRenderedText(SDL_Renderer* gRenderer, TTF_Font *gFont, std::string textureText, int textColor[3]) {
 	//Get rid of preexisting texture 
 	free(); 
-	
+
 	SDL_Color color = { textColor[0], textColor[1], textColor[2]};
 	//Render text surface 
-	SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), color); 
+	SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, textureText.c_str(), color); 
 	if( textSurface == NULL ) { 
-		printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() ); 
+		Error("Unable to render text surface! SDL_ttf Error: " + *TTF_GetError());
 	} else { 
 		//Create texture from surface pixels 
 		mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface ); 
-		if( mTexture == NULL ) { 
-			printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() ); 
+		if( mTexture == NULL ) {
+			Error("Unable to create texture from rendered text! SDL Error: " + *SDL_GetError()); 
 		} else {
 			//Get image dimensions 
 			mWidth = textSurface->w; 

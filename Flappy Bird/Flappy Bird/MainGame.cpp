@@ -1,6 +1,5 @@
 #include "MainGame.h"
 #include "Errors.h"
-#include <iostream>
 
 // constructor
 MainGame::MainGame()
@@ -11,11 +10,12 @@ MainGame::MainGame()
 	gravity = -0.8;
 	acceleration = 0;
 	gameSpeed = 6;
-	maxAcceleration = 10;
+	maxAcceleration = 8.5;
 	score = 0;
 	passedPipe = false;
 	passedPipe2 = false;
 	godMode = false;
+	renderFPS = false;
 
 	// create a window and pass it to the spritemanager
 	window.create("Flappy Bird", 400, 500, SHOWN);
@@ -32,16 +32,10 @@ MainGame::~MainGame() {
 
 // initialise systems/variables
 void MainGame::init() {
-	bool success = true;
-
 	loadGameObjects();
 	loadSprites();
 	loadFonts();
-
-	if (!loadAudio()) {
-		success = false;
-		printf("Failed to load audio!");
-	}
+	loadAudio();
 
 	resetPlayer();
 	resetPipes();
@@ -66,23 +60,19 @@ void MainGame::loadGameObjects() {
 }
 
 // loads audio into the audio manager
-bool MainGame::loadAudio() {
-	bool success = true;
-
+void MainGame::loadAudio() {
 	// load soundEffects
-	if (!audioManager.loadSoundEffect("death", "Audio/select1.wav")) { success = false; }
-	if (!audioManager.loadSoundEffect("next", "Audio/select3b.wav")) { success = false; }
-	if (!audioManager.loadSoundEffect("coin", "Audio/smw_coin.wav")) { success = false; }
+	audioManager.loadSoundEffect("death", "Audio/select1.wav");
+	audioManager.loadSoundEffect("next", "Audio/select3b.wav");
+	audioManager.loadSoundEffect("coin", "Audio/smw_coin.wav");
 
 	// load Music
-	if (!audioManager.loadSong("Kids_Music_3", "Audio/Kids_Music_3.wav")) { success = false; }
+	audioManager.loadSong("Kids_Music_3", "Audio/Kids_Music_3.wav");
 
 	// set the volume
 	audioManager.setSoundFXVolume(1, 128);
 	audioManager.setMusicVolume(20);
 	audioManager.playSong("Kids_Music_3");
-
-	return success;
 }
 
 // load Sprites
@@ -123,14 +113,19 @@ void MainGame::loadFonts() {
 	int textColor[3] = {255, 255, 255};
 
 	// create font for displaying score whilst playing
-	spriteManager.newFont("fps", "Fonts/DroidSansMono.ttf", 20, "FPS: " + std::to_string(limiter.end()), textColor);
+	spriteManager.newFont("fps_font", "Fonts/DroidSansMono.ttf", 20);
+	spriteManager.newFontTexture("fps_texture", "fps_font", 20, "FPS: " + std::to_string(limiter.end()), textColor);
 
 	// create font for displaying score whilst playing
-	spriteManager.newFont("score", "Fonts/DroidSansMono.ttf", 30, "Score: " + std::to_string(score), textColor);
+	spriteManager.newFont("score_font", "Fonts/KOMIKAX.ttf", 20);
+	spriteManager.newFontTexture("score_texture", "score_font", 30, "Score: " + std::to_string(score), textColor);
 
 	// create fonts for game over
-	spriteManager.newFont("scoreMenu", "Fonts/SF_Arch/SF_Arch_Rival.ttf", 20, "Score: " + std::to_string(score), textColor);
-	spriteManager.newFont("highScoreMenu", "Fonts/SF_Arch/SF_Arch_Rival.ttf", 20, "Highscore: " + std::to_string(highScore), textColor);
+	spriteManager.newFont("scoremenu_font", "Fonts/SF_Arch/SF_Arch_Rival.ttf", 20);
+	spriteManager.newFontTexture("scoremenu_texture", "scoremenu_font", 20, std::to_string(score), textColor);
+	spriteManager.newFont("highscoremenu_font", "Fonts/SF_Arch/SF_Arch_Rival.ttf", 20);
+	spriteManager.newFontTexture("highscoremenu_texture", "highscoremenu_font", 20, std::to_string(highScore), textColor);
+	
 }
 
 // main game loop
@@ -139,15 +134,13 @@ void MainGame::run() {
 
 	limiter.setMaxFPS(60);
 	while (running) {
-
 		// get user input
 		processInput();
 		update();
 
 		limiter.begin();
-
 		render();
-
+		limiter.end();
 	}
 }
 
@@ -184,6 +177,15 @@ void MainGame::processInput() {
 	}
 	if (inputManager.isKeyPressed('quit')) { // window exit
 		running = false;
+	}
+	if (inputManager.isKeyPressed('1')) {
+		if (renderFPS) {
+			renderFPS = false;
+		}
+		else {
+			renderFPS = true;
+		}
+		inputManager.releaseKey('1');
 	}
 
 	// keys for audio
@@ -261,7 +263,7 @@ void MainGame::update() {
 
 		// update scoreTexture
 		int textColor[3]{ 0,0,0 };
-		spriteManager.updateFont("score", "Score: " + std::to_string(score), textColor);
+		spriteManager.updateFontTexture("score_texture", "score_font", "Score: " + std::to_string(score), textColor);
 
 
 
@@ -326,7 +328,7 @@ void MainGame::checkCollision() {
 	height = spriteManager.getSpriteHeight("player");
 	height2 = spriteManager.getSpriteHeight("ground");
 	if (player.getPosY() + height > window.getScreenHeight() - height2) {
-		std::cout << "Collided Bottom!" << std::endl;
+		Error("Collided Bottom!");
 		if (!godMode) {
 			audioManager.playSound("death");
 			state = GAME_OVER;
@@ -335,7 +337,7 @@ void MainGame::checkCollision() {
 
 	// if player hits top of screen
 	if (player.getPosY() < 0) {
-		std::cout << "Collided Top!" << std::endl;
+		Error("Collided Top!");
 		if (!godMode) {
 			audioManager.playSound("death");
 			state = GAME_OVER;
@@ -351,7 +353,7 @@ void MainGame::checkCollision() {
 
 	if (player.getPosX() + width / 2 >= pipeTop.getPosX() && player.getPosX() <= pipeTop.getPosX() + width2) {
 		if (player.getPosY() <= (pipeTop.getPosY() + height2)) {
-			std::cout << "Collided With Top Pipe!" << std::endl;
+			Error("Collided with Top Pipe!");
 			if (!godMode) {
 				audioManager.playSound("death");
 				state = GAME_OVER;
@@ -367,7 +369,7 @@ void MainGame::checkCollision() {
 
 	if (player.getPosX() + width / 2 >= pipeBottom.getPosX() && player.getPosX() <= pipeBottom.getPosX() + width2) {
 		if (player.getPosY() + height >= pipeBottom.getPosY()) {
-			std::cout << "Collided With pipeBottom!" << std::endl;
+			Error("Collided with Bottom Pipe!");
 			if (!godMode) {
 				audioManager.playSound("death");
 				state = GAME_OVER;
@@ -383,7 +385,7 @@ void MainGame::checkCollision() {
 
 	if (player.getPosX() + width / 2 >= pipeTop2.getPosX() && player.getPosX() <= pipeTop2.getPosX() + width2) {
 		if (player.getPosY() <= (pipeTop2.getPosY() + height2)) {
-			std::cout << "Collided With pipeTop2!" << std::endl;
+			Error("Collided with Top Pipe!");
 			if (!godMode) {
 				audioManager.playSound("death");
 				state = GAME_OVER;
@@ -399,7 +401,7 @@ void MainGame::checkCollision() {
 
 	if (player.getPosX() + width / 2 >= pipeBottom2.getPosX() && player.getPosX() <= pipeBottom2.getPosX() + width2) {
 		if (player.getPosY() + height >= pipeBottom2.getPosY()) {
-			std::cout << "Collided With pipeBottom2!" << std::endl;
+			Error("Collided with Bottom Pipe!");
 			if (!godMode) {
 				audioManager.playSound("death");
 				state = GAME_OVER;
@@ -456,7 +458,7 @@ void MainGame::render() {
 		}
 
 		// render score & highscore
-		spriteManager.render(window.getScreenWidth()-100, 10, 0, "score");
+		spriteManager.render(window.getScreenWidth() - 125, 10, 0, "score_texture");
 	}
 
 	// if gamestate == MENU render the menu
@@ -497,17 +499,19 @@ void MainGame::render() {
 
 		// update the score textures
 		int textColor[3] = {0, 0, 0};
-		spriteManager.updateFont("scoreMenu", std::to_string(score), textColor);
-		spriteManager.updateFont("highScoreMenu", std::to_string(highScore), textColor);
+		spriteManager.updateFontTexture("scoremenu_texture", "scoremenu_font", std::to_string(score), textColor);
+		spriteManager.updateFontTexture("highscoremenu_texture", "highscoremenu_font", std::to_string(highScore), textColor);
 
 		// render score & highscore
-		spriteManager.render(window.getScreenWidth()/2+70, 254, 0, "scoreMenu");
-		spriteManager.render(window.getScreenWidth()/2+70, 298, 0, "highScoreMenu");
+		spriteManager.render(window.getScreenWidth()/2+70, 254, 0, "scoremenu_texture");
+		spriteManager.render(window.getScreenWidth()/2+70, 298, 0, "highscoremenu_texture");
 	}
 
-	int textColor[3] = { 0, 0, 0 };
-	spriteManager.updateFont("fps", std::to_string(limiter.end()), textColor);
-	spriteManager.render(10, 10, 0, "fps");
+	if (renderFPS) {
+		int textColor[3] = { 0, 0, 0 };
+		spriteManager.updateFontTexture("fps_texture", "fps_font", "FPS: " + std::to_string((int)limiter.getFPS()), textColor);
+		spriteManager.render(10, 10, 0, "fps_texture");
+	}
 
 	//Update screen
 	spriteManager.RenderPresent();

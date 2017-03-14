@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "Texture.h"
 #include "Animation.h"
+#include "Font.h"
 
 // allows for sprite, animation & font creation, stores them in vectors
 // also creates the graphics renderer used to render to the window
@@ -21,11 +22,12 @@ public:
 
 	// create new sprites/animation/fonts
 	void newSprite(std::string ID, std::string path, int width, int height, int x, int y);
-	void newFont(std::string ID, const char* fontPath, int size, std::string textureText, int textColor[3]);
+	void newFont(std::string ID, const char* fontPath, int size);
+	void newFontTexture(std::string ID, std::string fontID, int size, std::string textureText, int textColor[3]);
 	void createAnimation(std::string id, std::vector<std::string>SpriteIds);
 	
 	// updates an old font texture with new text
-	void updateFont(std::string ID, std::string textureText, int textColor[3]);
+	void updateFontTexture(std::string ID, std::string textureText, std::string fontID, int textColor[3]);
 
 	// render sprite/animation to the screen
 	void render(int x, int y, double angle, std::string id);
@@ -38,14 +40,13 @@ public:
 
 	// renderer functions
 	void SetRenderDrawColor(int r, int g, int b, int a);
-	void SetVSYN(bool vsync);
 	void RenderClear();
 	void RenderPresent();
 
 private:
 	// variables
-	TTF_Font *gFont = NULL;
 	SDL_Renderer* Renderer;
 	std::vector<Texture*>sprites;
 	std::vector<Animation>animations;
+	std::vector<Font*>fonts;
 };
